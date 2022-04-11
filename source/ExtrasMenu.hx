@@ -100,7 +100,11 @@ class ExtrasMenu extends MusicBeatState
 
 		FlxTween.tween(versionShit, {y: FlxG.height - 18}, 2, {ease: FlxEase.elasticInOut});
 		FlxTween.tween(blackBorder, {y: FlxG.height - 18}, 2, {ease: FlxEase.elasticInOut});
-
+		
+                #if mobileC
+		addVirtualPad(FULL, A_B);
+		#end
+		
 		super.create();
 	}
 
