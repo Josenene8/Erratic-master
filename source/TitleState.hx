@@ -53,11 +53,7 @@ class TitleState extends MusicBeatState
 		FlxG.android.preventDefaultKeys = [BACK];
 		#end
 
-		#if polymod
-		//polymod.Polymod.init({modRoot: "mods", dirs: ['introMod']});
-		#end
 		
-
 
 		@:privateAccess
 		{
