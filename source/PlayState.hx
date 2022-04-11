@@ -261,14 +261,13 @@ class PlayState extends MusicBeatState
 	#end
 		
 	// API stuff
-	var video:MP4Handler;
+	
 
 	function playCutscene(name:String)
 	{
 		inCutscene = true;
 
-		video = new MP4Handler();
-		video.finishCallback = function()
+		
 		{
 			startCountdown();
 		}
@@ -279,8 +278,7 @@ class PlayState extends MusicBeatState
 	{
 		inCutscene = true;
 
-		video = new MP4Handler();
-		video.finishCallback = function()
+		
 		{
 			SONG = Song.loadFromJson(storyPlaylist[0].toLowerCase());
 			LoadingState.loadAndSwitchState(new PlayState());
