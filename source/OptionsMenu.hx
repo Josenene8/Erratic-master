@@ -58,6 +58,11 @@ class OptionsMenu extends MusicBeatState
 		]),
 		new OptionCategory("Data Management", [
 			new DataEraseOption("Erase all save data and reset the game back to 0. CANNOT BE UNDONE!"),
+		]),
+		
+		new OptionCategory("Mobile settings", [
+			new CustomControls("edit a control"),
+			new About("about android port")
 		])
 	];
 
@@ -115,7 +120,11 @@ class OptionsMenu extends MusicBeatState
 
 		FlxTween.tween(versionShit, {y: FlxG.height - 18}, 2, {ease: FlxEase.elasticInOut});
 		FlxTween.tween(blackBorder, {y: FlxG.height - 18}, 2, {ease: FlxEase.elasticInOut});
-
+		
+                #if mobileC
+		addVirtualPad(UP_DOWN, A_B);
+		#end
+			
 		super.create();
 	}
 
