@@ -52,12 +52,12 @@ class Option
 	private var display:String;
 	private var acceptValues:Bool = false;
 
-	var video:MP4Handler;
+	
 
 	function playCutscene(name:String)
 	{
-		video = new MP4Handler();
-		video.finishCallback = function() video.playVideo(Paths.video(name));
+		
+		
 	}
 
 	public final function getDisplay():String
