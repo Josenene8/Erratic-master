@@ -1,8 +1,5 @@
 package;
 
-#if sys
-import smTools.SMFile;
-#end
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
@@ -26,14 +23,15 @@ import flixel.util.FlxTimer;
 import lime.app.Application;
 import openfl.Assets;
 
-using StringTools;
-
 #if windows
 import Discord.DiscordClient;
 #end
+
 #if cpp
 import sys.thread.Thread;
 #end
+
+using StringTools;
 
 class TitleState extends MusicBeatState
 {
@@ -51,27 +49,33 @@ class TitleState extends MusicBeatState
 
 	override public function create():Void
 	{
+		#if android
+		FlxG.android.preventDefaultKeys = [BACK];
+		#end
+
+		#if polymod
+		polymod.Polymod.init({modRoot: "mods", dirs: ['introMod']});
+		#end
 		
+
 
 		@:privateAccess
 		{
 			trace("Loaded " + openfl.Assets.getLibrary("default").assetsLoaded + " assets (DEFAULT)");
 		}
-
+		
 		PlayerSettings.init();
 
 		#if windows
 		DiscordClient.initialize();
 
-		Application.current.onExit.add(function(exitCode)
-		{
+		Application.current.onExit.add (function (exitCode) {
 			DiscordClient.shutdown();
-		});
+		 });
+		 
 		#end
 
 		curWacky = FlxG.random.getObject(getIntroTextShit());
-
-		trace('hello');
 
 		// DEBUG BULLSHIT
 
@@ -87,9 +91,6 @@ class TitleState extends MusicBeatState
 		FlxG.save.bind('funkin', 'ninjamuffin99');
 
 		KadeEngineData.initSave();
-
-		// var file:SMFile = SMFile.loadFile("file.sm");
-		// this was testing things
 
 		Highscore.load();
 
@@ -161,24 +162,22 @@ class TitleState extends MusicBeatState
 		// bg.setGraphicSize(Std.int(bg.width * 0.6));
 		// bg.updateHitbox();
 		add(bg);
-		var circusbg:FlxSprite = new FlxSprite(0, 0).loadGraphic(Paths.image('special'));
-		circusbg.setGraphicSize(Std.int(FlxG.width));
-		circusbg.screenCenter();
-		circusbg.y += 180;
-		circusbg.x += 315;
-		circusbg.updateHitbox();
-		add(circusbg);
 
 		logoBl = new FlxSprite(-150, -100);
-		logoBl.frames = Paths.getSparrowAtlas('Logo');
+		logoBl.frames = Paths.getSparrowAtlas('logoBumpin');
 		logoBl.antialiasing = true;
-		logoBl.animation.addByPrefix('bump', 'Logo Bumpin', 12);
+		logoBl.animation.addByPrefix('bump', 'logo bumpin', 24);
 		logoBl.animation.play('bump');
-		logoBl.screenCenter();
 		logoBl.updateHitbox();
-		logoBl.setGraphicSize(Std.int(logoBl.width * 0.7));
 		// logoBl.screenCenter();
 		// logoBl.color = FlxColor.BLACK;
+
+		gfDance = new FlxSprite(FlxG.width * 0.4, FlxG.height * 0.07);
+		gfDance.frames = Paths.getSparrowAtlas('gfDanceTitle');
+		gfDance.animation.addByIndices('danceLeft', 'gfDance', [30, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], "", 24, false);
+		gfDance.animation.addByIndices('danceRight', 'gfDance', [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29], "", 24, false);
+		gfDance.antialiasing = true;
+		add(gfDance);
 		add(logoBl);
 
 		titleText = new FlxSprite(100, FlxG.height * 0.8);
@@ -191,7 +190,7 @@ class TitleState extends MusicBeatState
 		// titleText.screenCenter(X);
 		add(titleText);
 
-		var logo:FlxSprite = new FlxSprite().loadGraphic(Paths.image('Logo'));
+		var logo:FlxSprite = new FlxSprite().loadGraphic(Paths.image('logo'));
 		logo.screenCenter();
 		logo.antialiasing = true;
 		// add(logo);
@@ -261,7 +260,7 @@ class TitleState extends MusicBeatState
 			FlxG.fullscreen = !FlxG.fullscreen;
 		}
 
-		var pressedEnter:Bool = controls.ACCEPT;
+		var pressedEnter:Bool = FlxG.keys.justPressed.ENTER;
 
 		#if mobile
 		for (touch in FlxG.touches.list)
@@ -273,15 +272,22 @@ class TitleState extends MusicBeatState
 		}
 		#end
 
+		var gamepad:FlxGamepad = FlxG.gamepads.lastActive;
+
+		if (gamepad != null)
+		{
+			if (gamepad.justPressed.START)
+				pressedEnter = true;
+
+			#if switch
+			if (gamepad.justPressed.B)
+				pressedEnter = true;
+			#end
+		}
+
 		if (pressedEnter && !transitioning && skippedIntro)
 		{
-			#if !switch
-			
 
-			// If it's Friday according to da clock
-			if (Date.now().getDay() == 5)
-				
-			#end
 
 			if (FlxG.save.data.flashing)
 				titleText.animation.play('press');
@@ -297,24 +303,32 @@ class TitleState extends MusicBeatState
 			new FlxTimer().start(2, function(tmr:FlxTimer)
 			{
 				// Get current version of Kade Engine
-
+				
 				var http = new haxe.Http("https://raw.githubusercontent.com/KadeDev/Kade-Engine/master/version.downloadMe");
 				var returnedData:Array<String> = [];
-
-				http.onData = function(data:String)
+				
+				http.onData = function (data:String)
 				{
 					returnedData[0] = data.substring(0, data.indexOf(';'));
 					returnedData[1] = data.substring(data.indexOf('-'), data.length);
-
-					FlxG.switchState(new MainMenuState());
+				  	if (!MainMenuState.kadeEngineVer.contains(returnedData[0].trim()) && !OutdatedSubState.leftState && MainMenuState.nightly == "")
+					{
+						trace('outdated lmao! ' + returnedData[0] + ' != ' + MainMenuState.kadeEngineVer);
+						OutdatedSubState.needVer = returnedData[0];
+						OutdatedSubState.currChanges = returnedData[1];
+						FlxG.switchState(new OutdatedSubState());
+					}
+					else
+					{
+						FlxG.switchState(new MainMenuState());
+					}
 				}
-
-				http.onError = function(error)
-				{
-					trace('error: $error');
-					FlxG.switchState(new MainMenuState()); // fail but we go anyway
+				
+				http.onError = function (error) {
+				  trace('error: $error');
+				  FlxG.switchState(new MainMenuState()); // fail but we go anyway
 				}
-
+				
 				http.request();
 			});
 			// FlxG.sound.play(Paths.music('titleShoot'), 0.7);
@@ -363,61 +377,71 @@ class TitleState extends MusicBeatState
 		super.beatHit();
 
 		logoBl.animation.play('bump');
+		danceLeft = !danceLeft;
+
+		if (danceLeft)
+			gfDance.animation.play('danceRight');
+		else
+			gfDance.animation.play('danceLeft');
 
 		FlxG.log.add(curBeat);
 
 		switch (curBeat)
 		{
+			case 1:
+				createCoolText(['ninjamuffin99', 'phantomArcade', 'kawaisprite', 'evilsk8er']);
+			// credTextShit.visible = true;
+			case 3:
+				addMoreText('present');
+			// credTextShit.text += '\npresent...';
+			// credTextShit.addText();
+			case 4:
+				deleteCoolText();
+			// credTextShit.visible = false;
+			// credTextShit.text = 'In association \nwith';
+			// credTextShit.screenCenter();
 			case 5:
-				createCoolText(["Ladies and gentlemen!"]);
+				if (Main.watermarks)
+					createCoolText(['Kade Engine', 'by']);
+				else
+					createCoolText(['In Partnership', 'with']);
 			case 7:
-				addMoreText('Welcome to the Circus!');
-				addMoreText('We hope you have');
-				addMoreText('a GREAT time!');
-			case 10:
+				if (Main.watermarks)
+					addMoreText('KadeDeveloper');
+				else
+				{
+					addMoreText('Newgrounds');
+					ngSpr.visible = true;
+				}
+			// credTextShit.text += '\nNewgrounds';
+			case 8:
 				deleteCoolText();
+				ngSpr.visible = false;
+			// credTextShit.visible = false;
+
+			// credTextShit.text = 'Shoutouts Tom Fulp';
+			// credTextShit.screenCenter();
+			case 9:
+				createCoolText([curWacky[0]]);
+			// credTextShit.visible = true;
 			case 11:
-				createCoolText(['We have a special guest!']);
+				addMoreText(curWacky[1]);
+			// credTextShit.text += '\nlmao';
+			case 12:
+				deleteCoolText();
+			// credTextShit.visible = false;
+			// credTextShit.text = "Friday";
+			// credTextShit.screenCenter();
 			case 13:
-				addMoreText('Straight from the Stage');
+				addMoreText('Friday');
+			// credTextShit.visible = true;
 			case 14:
-				addMoreText('Meet...');
+				addMoreText('Night');
+			// credTextShit.text += '\nNight';
 			case 15:
-				deleteCoolText();
+				addMoreText('Funkin'); // credTextShit.text += '\nFunkin';
+
 			case 16:
-				createCoolText(['the Boyfriend!']);
-			case 18:
-				addMoreText('The Girlfriend!');
-			case 20:
-				deleteCoolText();
-			case 23:
-				createCoolText(['Folks!']);
-			case 25:
-				addMoreText('Get Ready!');
-			case 27:
-				deleteCoolText();
-			case 28:
-				createCoolText(["For...!"]);
-			case 30:
-				deleteCoolText();
-			case 33:
-				createCoolText(["IT"]);
-			case 35:
-				addMoreText('IS');
-			case 37:
-				addMoreText('SHOWTIME!');
-			case 39:
-				deleteCoolText();
-			case 41:
-				addMoreText('Friday Night Funkin');
-
-			case 43:
-				addMoreText('VS');
-
-			case 46:
-				addMoreText('Erratic');
-			case 48:
-				deleteCoolText();
 				skipIntro();
 		}
 	}
