@@ -54,7 +54,7 @@ class TitleState extends MusicBeatState
 		#end
 
 		#if polymod
-		polymod.Polymod.init({modRoot: "mods", dirs: ['introMod']});
+		//polymod.Polymod.init({modRoot: "mods", dirs: ['introMod']});
 		#end
 		
 
