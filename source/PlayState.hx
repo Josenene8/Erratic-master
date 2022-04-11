@@ -271,7 +271,7 @@ class PlayState extends MusicBeatState
 		{
 			startCountdown();
 		}
-		video.playVideo(Paths.video(name));
+		
 	}
 
 	function playEndCutscene(name:String)
@@ -283,7 +283,7 @@ class PlayState extends MusicBeatState
 			SONG = Song.loadFromJson(storyPlaylist[0].toLowerCase());
 			LoadingState.loadAndSwitchState(new PlayState());
 		}
-		video.playVideo(Paths.video(name));
+		
 	}
 
 	public function addObject(object:FlxBasic)
@@ -2922,8 +2922,7 @@ class PlayState extends MusicBeatState
 			#end
 		}
 
-		var video:MP4Handler = new MP4Handler();
-
+		
 		if (offsetTesting)
 		{
 			FlxG.sound.playMusic(Paths.music('freakyMenu'));
@@ -2988,7 +2987,7 @@ class PlayState extends MusicBeatState
 
 					if (SONG.validScore)
 					{
-						NGio.unlockMedal(60961);
+						
 						Highscore.saveWeekScore(storyWeek, campaignScore, storyDifficulty);
 					}
 
