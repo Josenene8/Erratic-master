@@ -40,8 +40,6 @@ class FreeplayState extends MusicBeatState
 
 	override function create()
 	{ 
-		Main.clearMemory(false);
-		Main.clearMemory(true);
 
 		if (FlxG.save.data.weekcompleted && !FlxG.save.data.week2completed)
 		{
